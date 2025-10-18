@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ID Card Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 1.875rem;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .btn-blue {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-blue:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-orange {
+      background: #ea580c;
+      color: white;
+    }
+
+    .btn-orange:hover {
+      background: #c2410c;
+    }
+
+    .btn-green {
+      background: #16a34a;
+      color: white;
+    }
+
+    .btn-green:hover {
+      background: #15803d;
+    }
+
+    .btn-purple {
+      background: #9333ea;
+      color: white;
+      font-size: 0.875rem;
+    }
+
+    .btn-purple:hover {
+      background: #7e22ce;
+    }
+
+    .btn-indigo {
+      background: #4f46e5;
+      color: white;
+      font-size: 0.875rem;
+    }
+
+    .btn-indigo:hover {
+      background: #4338ca;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .alert-success {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .alert-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .info-box {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #dbeafe;
+      border-radius: 0.5rem;
+    }
+
+    .info-box h3 {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-box p {
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+
+    .card-container {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card-wrapper {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .id-card {
+      width: 350px;
+      height: 550px;
+      border: 2px solid blue;
+      padding: 20px;
+      background: white;
+border-radius:12px;
+      position: relative;
+    }
+
+    .card-logo {
+      text-align: center;
+      margin-bottom: 15px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-logo img {
+      max-height: 80px;
+      max-width: 100%;
+    }
+
+    .card-photo {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .photo-box {
+      width: 180px;
+      height: 190px;
+      border: 2px solid #000;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      overflow: hidden;
+    }
+
+    .photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-info {
+      font-size: 13px;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      height: calc(100% - 235px);
+    }
+
+    .student-name {
+      font-size: 22px;
+      font-weight: bolder;
+      margin-bottom: 10px;
+      text-align: center;
+color:blue;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-label {
+      font-weight: 600;
+    }
+
+    .card-footer {
+      position: absolute;
+      bottom: 15px;
+      left: 20px;
+      right: 20px;
+      text-align: center;
+      padding-top: 8px;
+      border-top: 1px solid #000;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+    }
+
+    .card-footer-center {
+      flex: 1;
+      text-align: center;
+    }
+
+    .back-section {
+      font-size: 12px;
+      line-height: 1.7;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 65px;
+    }
+
+    .section-title {
+      font-weight: bold;
+margin-bottom:10px;
+
+      font-size: 13px;
+      text-decoration: ;
+    }
+
+    .info-row {
+      margin-bottom: 4px;
+      word-wrap: break-word;
+      font-size: 11px;
+    }
+
+    .instructions {
+      margin-top: auto;
+      padding-top: 15px;
+      border-top: 1px solid #000;
+      margin-bottom: 10px;
+    }
+
+    .instructions-text {
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .instructions-text p {
+      margin: 0 0 6px 0;
+    }
+
+    .back-footer {
+      position: absolute;
+      bottom: 15px;
+      left: 20px;
+      right: 20px;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .session-row {
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .valid-row {
+      padding-top: 6px;
+      border-top: 1px solid #000;
+    }
+
+    .action-buttons {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>ID Card Generator</h1>
+      <p class="subtitle">Upload Excel file and university logo to generate ID cards</p>
+      
+      <div class="button-group">
+        <label class="btn btn-blue">
+          📤 Upload Excel File
+          <input type="file" id="excelFile" accept=".xlsx,.xls">
+        </label>
+
+        <label class="btn btn-orange">
+          📷 Upload Logo
+          <input type="file" id="logoFile" accept="image/*">
+        </label>
+
+        <button id="printAllBtn" class="btn btn-green" style="display: none;">
+          💾 Download All Cards (PDF)
+        </button>
+      </div>
+
+      <div id="logoSuccess" class="alert alert-success" style="display: none;">
+        ✓ Logo uploaded successfully
+      </div>
+
+      <div id="errorMsg" class="alert alert-error" style="display: none;"></div>
+
+      <div class="info-box">
+        <h3>Excel Format Required:</h3>
+        <p>Columns: NAME, REG_NO, COURSE, DEPARTMENT, SESSION, FATHER_NAME, DOB, CONTACT, EMERGENCY, ADDRESS, CITY, STATE, EMAIL, BLOOD_GROUP, VALID_UPTO, INSTITUTION_ADDRESS, INSTITUTION_EMAIL, INSTITUTION_WEBSITE, INSTITUTION_PHONE</p>
+      </div>
+    </div>
+
+    <div id="cardsContainer"></div>
+  </div>
+
+  <script>
+    let students = [];
+    let images = {};
+    let logo = null;
+
+    document.getElementById('excelFile').addEventListener('change', handleFileUpload);
+    document.getElementById('logoFile').addEventListener('change', handleLogoUpload);
+    document.getElementById('printAllBtn').addEventListener('click', downloadAllCards);
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      
+      // If already in dd/mm/yyyy format, return as is
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+        return dateStr;
+      }
+      
+      // Try to parse Excel date number
+      if (!isNaN(dateStr)) {
+        const excelEpoch = new Date(1899, 11, 30);
+        const date = new Date(excelEpoch.getTime() + dateStr * 86400000);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
+      
+      // Try to parse standard date formats
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
+      
+      return dateStr;
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const errorMsg = document.getElementById('errorMsg');
+      errorMsg.style.display = 'none';
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+          students = jsonData.map(row => ({
+            name: row['NAME'] || row['Name'] || row['name'] || '',
+            regNo: row['REG_NO'] || row['Reg_No'] || row['Registration Number'] || '',
+            course: row['COURSE'] || row['Course'] || row['course'] || '',
+            department: row['DEPARTMENT'] || row['Department'] || row['department'] || '',
+            session: row['SESSION'] || row['Session'] || row['session'] || '',
+            fatherName: row['FATHER_NAME'] || row['Father Name'] || row['father_name'] || '',
+            dob: formatDate(row['DOB'] || row['Date of Birth'] || row['dob'] || ''),
+            contact: row['CONTACT'] || row['Contact'] || row['contact'] || '',
+            emergency: row['EMERGENCY'] || row['Emergency'] || row['emergency'] || 'NA',
+            address: row['ADDRESS'] || row['Address'] || row['address'] || '',
+            city: row['CITY'] || row['City'] || row['city'] || '',
+            state: row['STATE'] || row['State'] || row['state'] || '',
+            email: row['EMAIL'] || row['Email'] || row['email'] || '',
+            bloodGroup: row['BLOOD_GROUP'] || row['Blood Group'] || row['blood_group'] || '',
+            validUpto: formatDate(row['VALID_UPTO'] || row['Valid Upto'] || row['valid_upto'] || ''),
+            institutionAddress: row['INSTITUTION_ADDRESS'] || row['Institution Address'] || '',
+            institutionEmail: row['INSTITUTION_EMAIL'] || row['Institution Email'] || '',
+            institutionWebsite: row['INSTITUTION_WEBSITE'] || row['Institution Website'] || '',
+            institutionPhone: row['INSTITUTION_PHONE'] || row['Institution Phone'] || ''
+          }));
+
+          renderCards();
+          document.getElementById('printAllBtn').style.display = 'inline-flex';
+        } catch (err) {
+          errorMsg.textContent = 'Error reading Excel file. Please ensure it has the correct format.';
+          errorMsg.style.display = 'block';
+          console.error(err);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function handleLogoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        logo = event.target.result;
+        document.getElementById('logoSuccess').style.display = 'block';
+        renderCards();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleImageUpload(index, e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        images[index] = event.target.result;
+        renderCards();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cardsContainer');
+      container.innerHTML = '';
+
+      students.forEach((student, index) => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card-container';
+        cardDiv.innerHTML = `
+          <div class="card-wrapper">
+            <!-- FRONT CARD -->
+            <div class="id-card" id="card-front-${index}">
+              <div class="card-logo">
+                ${logo ? `<img src="${logo}" alt="Logo">` : '<div style="font-size: 14px; font-weight: bold; color: #666;">UNIVERSITY LOGO</div>'}
+              </div>
+
+              <div class="card-photo">
+                <div class="photo-box">
+                  ${images[index] ? `<img src="${images[index]}" alt="Student">` : '<div style="font-size: 40px;">👤</div>'}
+                </div>
+              </div>
+
+              <div class="card-info">
+                <div class="student-name">${student.name.toUpperCase()}</div>
+                <div style="margin-bottom: 4px; text-align: center;"><span class="info-label">Reg. No : </span>${student.regNo}</div>
+                <div style="font-weight: 600; margin-bottom: 4px; text-align: center; font-size: 16px; color:blue;">${student.course.toUpperCase()}</div>
+                <div style="font-weight: 600; margin-bottom: 10px; text-align: center; font-size: 16px;">${student.department.toUpperCase()}</div>
+              </div>
+              <div class="card-footer">
+                <div style="text-align: center; border-top: 1px solid #000; padding-top: 3px; margin-top: 20px; flex: 1;">
+                  Student Signature
+                </div>
+                <div style="text-align: center; border-top: 1px solid #000; padding-top: 3px; margin-top: 20px; flex: 1;">
+                  Authorized Signature
+                </div>
+              </div>
+            </div>
+
+            <!-- BACK CARD -->
+            <div class="id-card" id="card-back-${index}">
+              <div class="back-section">
+                <div>
+                  <div class="section-title" >STUDENT INFORMATION</div>
+                  <div class="info-row"><span class="info-label">FATHER'S NAME : </span>${student.fatherName}</div>
+                  <div class="info-row"><span class="info-label">DOB : </span>${student.dob}</div>
+                  <div class="info-row"><span class="info-label">CONTACT NO : </span>${student.contact}</div>
+                  <div class="info-row"><span class="info-label">EMERGENCY NO : </span>${student.emergency}</div>
+                  <div class="info-row"><span class="info-label">ADDRESS : </span>${student.address}</div>
+                  <div class="info-row"><span class="info-label">CITY : </span>${student.city}</div>
+                  <div class="info-row"><span class="info-label">STATE : </span>${student.state}</div>
+                  <div class="info-row"><span class="info-label">EMAIL : </span>${student.email}</div>
+                  <div class="info-row"><span class="info-label">BLOOD GROUP : </span>${student.bloodGroup}</div>
+                </div>
+
+                <div class="instructions">
+                  <div class="section-title" style="font-size: 12px;">This card is property of Glocal university</div>
+
+                  <div class="section-title" style="font-size: 12px;">If this card is found kindly return it to:</div>
+                  <div class="instructions-text">
+                    ${student.institutionAddress ? `<p><strong>Address:</strong> ${student.institutionAddress}</p>` : ''}
+                    ${student.institutionEmail ? `<p><strong>Email:</strong> ${student.institutionEmail}</p>` : ''}
+                    ${student.institutionWebsite ? `<p><strong>Website:</strong> ${student.institutionWebsite}</p>` : ''}
+                    ${student.institutionPhone ? `<p><strong>Phone:</strong> ${student.institutionPhone}</p>` : ''}
+                  </div>
+                </div>
+
+                <div class="back-footer">
+                  <div class="session-row">
+                    <span class="info-label">SESSION : </span>${student.session}
+                  </div>
+                  <div class="valid-row">
+                    <span class="info-label">VALID UPTO : </span>${student.validUpto}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <label class="btn btn-purple">
+              👤 Upload Photo
+              <input type="file" accept="image/*" onchange="handleImageUpload(${index}, event)">
+            </label>
+            <button class="btn btn-indigo" onclick="downloadCard(${index})">
+              💾 Download This Card (PDF)
+            </button>
+          </div>
+        `;
+        container.appendChild(cardDiv);
+      });
+    }
+
+    function downloadCard(index) {
+      const frontCard = document.getElementById(`card-front-${index}`);
+      const backCard = document.getElementById(`card-back-${index}`);
+
+      // Create a temporary container
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.left = '0';
+      container.style.top = '0';
+      container.style.zIndex = '-1';
+      container.style.display = 'flex';
+      container.style.gap = '30px';
+      container.style.background = 'white';
+      container.style.padding = '20px';
+      
+      const frontClone = frontCard.cloneNode(true);
+      const backClone = backCard.cloneNode(true);
+      container.appendChild(frontClone);
+      container.appendChild(backClone);
+      document.body.appendChild(container);
+
+      // Wait a moment for rendering
+      setTimeout(() => {
+        html2canvas(container, {
+          scale: 3,
+          backgroundColor: '#ffffff',
+          logging: false,
+          useCORS: true,
+          allowTaint: true
+        }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jspdf.jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+          });
+
+          pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+          pdf.save(`ID_Card_${students[index].name.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+
+          document.body.removeChild(container);
+        }).catch(err => {
+          console.error('Error generating PDF:', err);
+          alert('Error generating PDF. Please try again.');
+          document.body.removeChild(container);
+        });
+      }, 100);
+    }
+
+    function downloadAllCards() {
+      const pdf = new jspdf.jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      let currentIndex = 0;
+
+      function processNextCard() {
+        if (currentIndex >= students.length) {
+          pdf.save('All_ID_Cards.pdf');
+          return;
+        }
+
+        const frontCard = document.getElementById(`card-front-${currentIndex}`);
+        const backCard = document.getElementById(`card-back-${currentIndex}`);
+
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.left = '0';
+        container.style.top = '0';
+        container.style.zIndex = '-1';
+        container.style.display = 'flex';
+        container.style.gap = '30px';
+        container.style.background = 'white';
+        container.style.padding = '20px';
+        
+        const frontClone = frontCard.cloneNode(true);
+        const backClone = backCard.cloneNode(true);
+        container.appendChild(frontClone);
+        container.appendChild(backClone);
+        document.body.appendChild(container);
+
+        setTimeout(() => {
+          html2canvas(container, {
+            scale: 3,
+            backgroundColor: '#ffffff',
+            logging: false,
+            useCORS: true,
+            allowTaint: true
+          }).then(canvas => {
+            if (currentIndex > 0) {
+              pdf.addPage();
+            }
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            const imgWidth = pdfWidth - 20;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            const x = 10;
+            const y = (pdfHeight - imgHeight) / 2;
+
+            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+
+            document.body.removeChild(container);
+            currentIndex++;
+            processNextCard();
+          }).catch(err => {
+            console.error('Error generating PDF:', err);
+            document.body.removeChild(container);
+            currentIndex++;
+            processNextCard();
+          });
+        }, 100);
+      }
+
+      processNextCard();
+    }
+  </script>
+</body>
+</html>
